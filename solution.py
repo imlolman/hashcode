@@ -1,25 +1,31 @@
+import json
+inputFile = "a_example"
+outputFile = "a_example.out"
 
-inputFile = "c_many_ingredients.in"
-outputFile = "c_many_ingredients.out"
-
+# Taking input
 inp = open(inputFile).read().split('\n')
 
-_, duo, trio, squad = list(map(int,inp[0].strip().split(' ')))
+# Defining Global variables
+class Vars:
+    _, duo, trio, squad = list(map(int,inp[0].strip().split(' ')))
 
-# print(duo, trio, squad)
 
+# This is a function to give the pizzas a valid structure
 def mapPizzas(line, index):
-    list = line[1:].strip().split(' ')
-    list.sort()
+    list = line.strip().split(' ')[1:]
+    # list.sort()
     return {
         "ingredientsCount": len(list),
         "ingredients": list,
         "index": index
     }
-
 pizzas = [mapPizzas(line, index) for index, line in enumerate(inp[1:-1])]
-pizzas.sort(key=lambda x: x["ingredientsCount"], reverse=True)
-# print(pizzas)
+print(json.dumps(pizzas))
+
+
+
+
+# pizzas.sort(key=lambda x: x["ingredientsCount"], reverse=True)
 
 # {indexes, teamType}
 submission = []
@@ -27,7 +33,6 @@ submission = []
 def packAndSend(pizzasForTeam, teamType):
     indexes = []
     for pizzaForTeam in pizzasForTeam:
-        # adding None to ignore the pizza in future
         indexes.append(pizzaForTeam["pizza"]["index"])
         pizzas.remove(pizzaForTeam["pizza"])
 
@@ -37,14 +42,13 @@ def packAndSend(pizzasForTeam, teamType):
     })
     
 
-def calculateForTeam(teamsCount, teamSize):
+def calculateForTeam(teamsCount, teamSize, forceSale = False):
     while teamsCount:
         # Unique items for a team
         unique = []
 
         # {pizzas, value}
         pizzasForTeam = []
-
         for pizza in pizzas:
             value = 0
             for ingredient in pizza["ingredients"]:
@@ -56,20 +60,29 @@ def calculateForTeam(teamsCount, teamSize):
                     "pizza": pizza,
                     "value": value
                 })
+        # print(json.dumps(pizzasForTeam))
         if len(pizzasForTeam) >= teamSize:
             pizzasForTeam.sort(key=lambda x: x["value"], reverse=True)
+            # print(json.dumps(pizzasForTeam))
             packAndSend(pizzasForTeam[0:teamSize], teamSize)
             teamsCount-=1
         else:
             break
-    print("packed for 1 team")
+
+    if teamSize == 4:
+        Vars.squad = teamsCount
+    if teamSize == 3:
+        Vars.trio = teamsCount
+    if teamSize == 2:
+        Vars.duo = teamsCount
+
 
 print("Calculating for Squad")
-calculateForTeam(squad, 4)
+calculateForTeam(Vars.squad, 4)
 print("Calculating for trio")
-calculateForTeam(trio, 3)
+calculateForTeam(Vars.trio, 3)
 print("Calculating for duo")
-calculateForTeam(duo, 2)
+calculateForTeam(Vars.duo, 2)
 
 
 def mapSubmission(sub):
@@ -77,3 +90,5 @@ def mapSubmission(sub):
 
 open(outputFile, "w+").write('\n'.join([str(len(submission)), *list(map(mapSubmission, submission))]))
 
+# print(Vars.duo, Vars.trio, Vars.squad)
+print(len(pizzas))
